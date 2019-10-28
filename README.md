@@ -37,41 +37,46 @@ The next sections should give you all the necessary steps that are tuneable.
 
 # Prepare Account
 
-* RG_NAME="ocp4"
-* az ad sp create-for-rbac --role Contributor --name $RG_NAME | jq --arg sub_id "$(az account show | jq -r '.id')" '{subscriptionId:$sub_id,clientId:.appId, clientSecret:.password,tenantId:.tenant}' | jq -r 'keys[] as $k | "export \($k)=\(.[$k])"' | tee app_env
-* source app_env
-* export AZURE_AUTH_LOCATION=$(pwd)/osServicePrincipal.json
-* echo "{\"subscriptionId\": \"${subscriptionId}\", \"clientId\": \"${clientId}\", \"clientSecret\": \"${clientSecret}\", \"tenantId\": \"${tenantId}\" }"  | jq > $AZURE_AUTH_LOCATION
-* az role assignment create --role "User Access Administrator"     --assignee-object-id $(az ad sp list --filter "appId eq '${clientId}'" | jq '.[0].objectId' -r)
-* az ad app permission add --id ${clientId} --api 00000002-0000-0000-c000-000000000000 --api-permissions 824c81eb-e3f8-4ee6-8f6d-de7f50d565b7=Role
-* Grant permission for default directory in AD -> App registrations for that account for API Permissions
+```shell
+RG_NAME="ocp4"
+az ad sp create-for-rbac --role Contributor --name $RG_NAME | jq --arg sub_id "$(az account show | jq -r '.id')" '{subscriptionId:$sub_id,clientId:.appId, clientSecret:.password,tenantId:.tenant}' | jq -r 'keys[] as $k | "export \($k)=\(.[$k])"' | tee app_env
+source app_env
+export AZURE_AUTH_LOCATION=$(pwd)/osServicePrincipal.json
+echo "{\"subscriptionId\": \"${subscriptionId}\", \"clientId\": \"${clientId}\", \"clientSecret\": \"${clientSecret}\", \"tenantId\": \"${tenantId}\" }"  | jq > $AZURE_AUTH_LOCATION
+az role assignment create --role "User Access Administrator"     --assignee-object-id $(az ad sp list --filter "appId eq '${clientId}'" | jq '.[0].objectId' -r)
+az ad app permission add --id ${clientId} --api 00000002-0000-0000-c000-000000000000 --api-permissions 824c81eb-e3f8-4ee6-8f6d-de7f50d565b7=Role
+# Grant permission for default directory in AD -> App registrations for that account for API Permissions
+```
 
 # Run installer
 
-* rm -rf $RG_NAME && mkdir $RG_NAME # ensure we have a clean directory
-* cd $RG_NAME
-* ./openshift-install create install-config --dir=.
-* # tune install-config - ./install-config.yaml
-* ./openshift-install create manifests --dir=.
-* # adapt resource group name in .openshift_install_state.json /*/*.yml or whatever you like to change
-* # IMPORTANT: some parts are already k8s secrets (e.g. 99_cloud-creds-secret.yaml) which contain the value base64 encoded, thus you need to do the base64 dance twice.
-* sed -i "s/$(grep resourceGroupName: ./manifests/cluster-infrastructure-02-config.yml | cut -d:  -f 2 | tr -d ' ')/${RG_NAME}/g" .openshift_install_state.json */*.yaml
-* # Also edit the base64 blobs of the following files in .openshift_install_state.json as well as their content in the manifests .yaml
-** cloud-provider-config.yaml
-** 99_cloud-creds-secret.yaml
-** 99_openshift-cluster-api_master-machines-0.yaml
-** 99_openshift-cluster-api_master-machines-1.yaml
-** 99_openshift-cluster-api_master-machines-2.yaml
-** 99_openshift-cluster-api_worker-machineset-0.yaml
-** 99_openshift-cluster-api_worker-machineset-1.yaml
-** 99_openshift-cluster-api_worker-machineset-2.yaml
-* # example command
-* # echo -n BASE64_BLOB | base64 -d | sed MAGIC | base74 -w 0
-*  ./openshift-install create ignition-configs --dir=.
-* Verify content of the files above in the generated bootstrap iginition file
+```shell
+rm -rf $RG_NAME && mkdir $RG_NAME # ensure we have a clean directory
+cd $RG_NAME
+./openshift-install create install-config --dir=.
+# tune install-config - ./install-config.yaml
+./openshift-install create manifests --dir=.
+# adapt resource group name in .openshift_install_state.json /*/*.yml or whatever you like to change
+# IMPORTANT: some parts are already k8s secrets (e.g. 99_cloud-creds-secret.yaml) which contain the value base64 encoded, thus you need to do the base64 dance twice.
+sed -i "s/$(grep resourceGroupName: ./manifests/cluster-infrastructure-02-config.yml | cut -d:  -f 2 | tr -d ' ')/${RG_NAME}/g" .openshift_install_state.json */*.yaml
+# Also edit the base64 blobs of the following files in .openshift_install_state.json as well as their content in the manifests .yaml
+# cloud-provider-config.yaml
+# 99_cloud-creds-secret.yaml
+# 99_openshift-cluster-api_master-machines-0.yaml
+# 99_openshift-cluster-api_master-machines-1.yaml
+# 99_openshift-cluster-api_master-machines-2.yaml
+# 99_openshift-cluster-api_worker-machineset-0.yaml
+# 99_openshift-cluster-api_worker-machineset-1.yaml
+# 99_openshift-cluster-api_worker-machineset-2.yaml
+# example command
+# echo -n BASE64_BLOB | base64 -d | sed MAGIC | base74 -w 0
 
-* Create terraform config
-* cat >./terraform.tfvars<<EOF
+./openshift-install create ignition-configs --dir=.
+
+# Verify content of the files above in the generated bootstrap.ign iginition file
+
+# Create terraform config
+cat >./terraform.tfvars<<EOF
 azure_subscription_id = "${subscriptionId}"
 azure_client_id = "${clientId}"
 azure_client_secret = "${clientSecret}"
@@ -93,18 +98,24 @@ ignition_bootstrap_file = "$(pwd)/bootstrap.ign"
 ignition_master_file = "$(pwd)/master.ign"
 EOF
 
-* OCP_INSTALLER_DIR=$(pwd)
-* clone this repository and change to the directory
-* now would be the time to adapt the manifests
-* terraform init
-* terraform plan -var-file=${OCP_INSTALLER_DIR}/terraform.tfvars -out ${OCP_INSTALLER_DIR}/plan.out
-* terraform apply ${OCP_INSTALLER_DIR}/plan.out
-* ./openshift-install wait-for bootstrap-complete --dir=${OCP_INSTALLER_DIR}
-* It is safe to destroy the boostrap node now
-* terraform destroy -target=module.bootstrap -auto-approve -var-file=${OCP_INSTALLER_DIR}/terraform.tfvars
-* Let operators do their work
-* ./openshift-install wait-for install-complete --dir=${OCP_INSTALLER_DIR}
-* Done!
+OCP_INSTALLER_DIR=$(pwd)
+clone this repository and change to the directory
+# now would be the time to adapt the manifests
+
+terraform init
+terraform plan -var-file=${OCP_INSTALLER_DIR}/terraform.tfvars -out ${OCP_INSTALLER_DIR}/plan.out
+terraform apply ${OCP_INSTALLER_DIR}/plan.out
+
+./openshift-install wait-for bootstrap-complete --dir=${OCP_INSTALLER_DIR}
+# It is safe to destroy the boostrap node as soon as the previous commands complete
+
+terraform destroy -target=module.bootstrap -auto-approve -var-file=${OCP_INSTALLER_DIR}/terraform.tfvars
+
+# Let operators do their work
+./openshift-install wait-for install-complete --dir=${OCP_INSTALLER_DIR}
+
+# Done!
+```
 
 # Destroy
 
