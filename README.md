@@ -137,7 +137,9 @@ Get latest image from: https://github.com/openshift/installer/blob/release-4.2/d
 * RHCOS_VHD=$(az storage blob url --account-name os4storagemh -c vhd --name "$VHD_NAME" -o tsv)
 * az image create --resource-group rhcos_images --name rhcosimage --os-type Linux --storage-sku Premium_LRS --source "$RHCOS_VHD" --location westeurope
 
+# License
 
+Apache License 2.0
 
 
 
