@@ -35,7 +35,7 @@ What we will do:
 The next sections should give you all the necessary steps that are tuneable.
 
 
-# Prepare Account
+### Prepare Account
 
 ```shell
 RG_NAME="ocp4"
@@ -48,7 +48,7 @@ az ad app permission add --id ${clientId} --api 00000002-0000-0000-c000-00000000
 # Grant permission for default directory in AD -> App registrations for that account for API Permissions
 ```
 
-# Run installer
+### Run installer
 
 ```shell
 rm -rf $RG_NAME && mkdir $RG_NAME # ensure we have a clean directory
@@ -117,13 +117,11 @@ terraform destroy -target=module.bootstrap -auto-approve -var-file=${OCP_INSTALL
 # Done!
 ```
 
-# Destroy
+### Destroy
 
 ```shell
 ./openshift-install destroy cluster --dir=${OCP_INSTALLER_DIR}
 ```
-
-
 ## Getting terraform manifests
 
 Terraform manifests can be found in the installer in the following directory structure: `data/data/azure`.
@@ -152,14 +150,6 @@ RHCOS_VHD=$(az storage blob url --account-name os4storage -c vhd --name "$VHD_NA
 az image create --resource-group rhcos_images --name rhcosimage --os-type Linux --storage-sku Premium_LRS --source "$RHCOS_VHD" --location westeurope
 ```
 
-# License
+## License
 
 Apache License 2.0
-
-
-
-
-
-
-
-
