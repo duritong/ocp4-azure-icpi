@@ -119,7 +119,9 @@ terraform destroy -target=module.bootstrap -auto-approve -var-file=${OCP_INSTALL
 
 # Destroy
 
-* ./openshift-install destroy cluster --dir=${OCP_INSTALLER_DIR}
+```shell
+./openshift-install destroy cluster --dir=${OCP_INSTALLER_DIR}
+```
 
 
 ## Getting terraform manifests
@@ -135,18 +137,20 @@ certain manifests as you like to pre-configure your infrastructure.
 
 Adapted from: https://github.com/openshift/installer/blob/d0f7654bc4a0cf73392371962aef68cd9552b5dd/docs/user/azure/install.md
 
-* az group create --name os4-common --location westeurope
-* az storage account create --location westeurope --name os4storagemh --kind StorageV2 --resource-group os4-common
-* az storage container create --name vhd --account-name os4storagemh
-* ACCOUNT_KEY=$(az storage account keys list --account-name os4storagemh --resource-group os4-common --query "[0].value" -o tsv)
+```shell
+az group create --name os4-common --location westeurope
+az storage account create --location westeurope --name os4storagemh --kind StorageV2 --resource-group os4-common
+az storage container create --name vhd --account-name os4storagemh
+ACCOUNT_KEY=$(az storage account keys list --account-name os4storagemh --resource-group os4-common --query "[0].value" -o tsv)
 
-Get latest image from: https://github.com/openshift/installer/blob/release-4.2/data/data/rhcos.json
+# Get latest image from: https://github.com/openshift/installer/blob/release-4.2/data/data/rhcos.json
 
-* VHD_NAME=VHD_NAME=rhcos-42.80.20191002.0.vhd
-* az storage blob copy start --account-name "os4storagemh" --account-key "$ACCOUNT_KEY" --destination-blob "$VHD_NAME" --destination-container vhd --source-uri "https://openshifttechpreview.blob.core.windows.net/rhcos/$VHD_NAME"
-* az storage blob show -c vhd  --name "$VHD_NAME" --account-name "os4storagemh"
-* RHCOS_VHD=$(az storage blob url --account-name os4storagemh -c vhd --name "$VHD_NAME" -o tsv)
-* az image create --resource-group rhcos_images --name rhcosimage --os-type Linux --storage-sku Premium_LRS --source "$RHCOS_VHD" --location westeurope
+VHD_NAME=VHD_NAME=rhcos-42.80.20191002.0.vhd
+az storage blob copy start --account-name "os4storage" --account-key "$ACCOUNT_KEY" --destination-blob "$VHD_NAME" --destination-container vhd --source-uri "https://openshifttechpreview.blob.core.windows.net/rhcos/$VHD_NAME"
+az storage blob show -c vhd  --name "$VHD_NAME" --account-name "os4storage"
+RHCOS_VHD=$(az storage blob url --account-name os4storage -c vhd --name "$VHD_NAME" -o tsv)
+az image create --resource-group rhcos_images --name rhcosimage --os-type Linux --storage-sku Premium_LRS --source "$RHCOS_VHD" --location westeurope
+```
 
 # License
 
