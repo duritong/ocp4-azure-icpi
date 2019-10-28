@@ -21,7 +21,11 @@ What we will do:
 * Create the manifests and adapt them
 * Create the ignition configs out of the manifests
 * Set terraform variables based on the requirements
-* 
+* Run terraform
+* watch boostrap
+* destroy bootstrap
+* watch operators
+* done
 
 ## Requirements
 
