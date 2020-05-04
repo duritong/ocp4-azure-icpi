@@ -22,6 +22,8 @@ Important are that you additionally, set `public` in the `install-config.yaml` t
 configure all the pre-existing Azure resources and most important remove the public egress
 Service endpoint.
 
+Additionally, you will configure PTP as a clock source, so no public NTP servers need to be reached.
+
 **Important:** You must remove the public egress Service endpoint until specifying [OutboundType is supported](https://github.com/openshift/installer/pull/3324) by the installer.
 
 ## General idea
@@ -84,6 +86,8 @@ cd $RG_NAME
 ./openshift-install create manifests --dir=.
 # remove cluster outbound service:
 rm -f openshift/99_private-cluster-outbound-service.yaml
+# Add PTP clock source
+cp REPO/openshift/99*.yaml openshift
 # adapt resource group name in .openshift_install_state.json /*/*.yml or whatever you like to change
 # IMPORTANT: some parts are already k8s secrets (e.g. 99_cloud-creds-secret.yaml) which contain the value base64 encoded, thus you need to do the base64 dance twice.
 sed -i "s/$(grep resourceGroupName: ./manifests/cluster-infrastructure-02-config.yml | cut -d:  -f 2 | tr -d ' ')/${RG_NAME}/g" .openshift_install_state.json */*.yaml
