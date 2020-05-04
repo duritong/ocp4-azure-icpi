@@ -2,6 +2,11 @@ locals {
   bootstrap_nic_ip_configuration_name = "bootstrap-nic-ip"
 }
 
+variable "nic_depends_on" {
+  type    = any
+  default = null
+}
+
 data "azurerm_storage_account_sas" "ignition" {
   connection_string = var.storage_account.primary_connection_string
   https_only        = true
@@ -62,6 +67,8 @@ data "ignition_config" "redirect" {
 }
 
 resource "azurerm_public_ip" "bootstrap_public_ip" {
+  count = var.private ? 0 : 1
+
   sku                 = "Standard"
   location            = var.region
   name                = "${var.cluster_id}-bootstrap-pip"
@@ -70,28 +77,32 @@ resource "azurerm_public_ip" "bootstrap_public_ip" {
 }
 
 data "azurerm_public_ip" "bootstrap_public_ip" {
-  name                = azurerm_public_ip.bootstrap_public_ip.name
+  count = var.private ? 0 : 1
+
+  name                = azurerm_public_ip.bootstrap_public_ip[0].name
   resource_group_name = var.resource_group_name
 }
 
 resource "azurerm_network_interface" "bootstrap" {
-  name                = "${var.cluster_id}-bootstrap-nic"
-  location            = var.region
-  resource_group_name = var.resource_group_name
+  name                          = "${var.cluster_id}-bootstrap-nic"
+  location                      = var.region
+  resource_group_name           = var.resource_group_name
+  enable_accelerated_networking = true
 
   ip_configuration {
     subnet_id                     = var.subnet_id
     name                          = local.bootstrap_nic_ip_configuration_name
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.bootstrap_public_ip.id
+    public_ip_address_id          = var.private ? null : azurerm_public_ip.bootstrap_public_ip[0].id
   }
+  depends_on = [var.nic_depends_on]
 }
 
-resource "azurerm_network_interface_backend_address_pool_association" "public_lb_bootstrap" {
-  network_interface_id    = azurerm_network_interface.bootstrap.id
-  backend_address_pool_id = var.elb_backend_pool_id
-  ip_configuration_name   = local.bootstrap_nic_ip_configuration_name
-}
+#resource "azurerm_network_interface_backend_address_pool_association" "public_lb_bootstrap" {
+#  network_interface_id    = azurerm_network_interface.bootstrap.id
+#  backend_address_pool_id = var.elb_backend_pool_id
+#  ip_configuration_name   = local.bootstrap_nic_ip_configuration_name
+#}
 
 resource "azurerm_network_interface_backend_address_pool_association" "internal_lb_bootstrap" {
   network_interface_id    = azurerm_network_interface.bootstrap.id
@@ -146,7 +157,7 @@ resource "azurerm_virtual_machine" "bootstrap" {
   }
 
   depends_on = [
-    azurerm_network_interface_backend_address_pool_association.public_lb_bootstrap,
+    #azurerm_network_interface_backend_address_pool_association.public_lb_bootstrap,
     azurerm_network_interface_backend_address_pool_association.internal_lb_bootstrap
   ]
 }

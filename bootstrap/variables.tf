@@ -38,10 +38,10 @@ variable "subnet_id" {
   description = "The subnet ID for the bootstrap node."
 }
 
-variable "elb_backend_pool_id" {
-  type        = string
-  description = "The external load balancer bakend pool id. used to attach the bootstrap NIC"
-}
+#variable "elb_backend_pool_id" {
+#  type        = string
+#  description = "The external load balancer bakend pool id. used to attach the bootstrap NIC"
+#}
 
 variable "ilb_backend_pool_id" {
   type        = string
@@ -59,12 +59,12 @@ variable "tags" {
   description = "tags to be applied to created resources."
 }
 
-variable "private_dns_zone_id" {
-  type        = string
-  description = "This is to create explicit dependency on private zone to exist before VMs are created in the vnet. https://github.com/MicrosoftDocs/azure-docs/issues/13728"
-}
-
 variable "nsg_name" {
   type        = string
   description = "The network security group for the subnet."
+}
+
+variable "private" {
+  type        = bool
+  description = "This value determines if this is a private cluster or not."
 }

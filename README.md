@@ -5,6 +5,25 @@ This repository contains guidance and terraform manifests to do a customized IPI
 This is not a supported way of installing OpenShift 4, but it is close to what the `openshift-install` does
 when you are doing an IPI installation on Azure.
 
+## Fully private cluster edition / User Defined Routing
+
+When deploying a private cluster through IPI mechanisms, you will end up with a few public Azure resources that
+are required for the cluster to talk externally (e.g. Azure API).
+
+Using this branch (`fully-private-cluster`) you get some guidance how to establish a fully private cluster
+without any public resources.
+
+### Requirements
+
+You must have a vnet deployed and dedicated routing in place that allows to directly reach [Azure APIs](https://docs.microsoft.com/en-us/azure/azure-portal/azure-portal-safelist-urls?tabs=public-cloud) (no proxy,
+no TLS interception) and optionally also [Red Hat URLs](https://docs.openshift.com/container-platform/4.4/installing/install_config/configuring-firewall.html).
+
+Important are that you additionally, set `public` in the `install-config.yaml` to `Internal`,
+configure all the pre-existing Azure resources and most important remove the public egress
+Service endpoint.
+
+**Important:** You must remove the public egress Service endpoint until specifying [OutboundType is supported](https://github.com/openshift/installer/pull/3324) by the installer.
+
 ## General idea
 
 Basically, we follow what the IPI would do, but are driving the steps on our own. This allows us
@@ -59,7 +78,12 @@ rm -rf $RG_NAME && mkdir $RG_NAME # ensure we have a clean directory
 cd $RG_NAME
 ./openshift-install create install-config --dir=.
 # tune install-config - ./install-config.yaml
+# Define
+# publish: Internal
+# and specify all the existing vnets and so on.
 ./openshift-install create manifests --dir=.
+# remove cluster outbound service:
+rm -f openshift/99_private-cluster-outbound-service.yaml
 # adapt resource group name in .openshift_install_state.json /*/*.yml or whatever you like to change
 # IMPORTANT: some parts are already k8s secrets (e.g. 99_cloud-creds-secret.yaml) which contain the value base64 encoded, thus you need to do the base64 dance twice.
 sed -i "s/$(grep resourceGroupName: ./manifests/cluster-infrastructure-02-config.yml | cut -d:  -f 2 | tr -d ' ')/${RG_NAME}/g" .openshift_install_state.json */*.yaml

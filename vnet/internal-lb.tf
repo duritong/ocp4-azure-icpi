@@ -10,9 +10,8 @@ resource "azurerm_lb" "internal" {
 
   frontend_ip_configuration {
     name                          = local.internal_lb_frontend_ip_configuration_name
-    subnet_id                     = azurerm_subnet.master_subnet.id
-    private_ip_address_allocation = "Static"
-    private_ip_address            = cidrhost(var.master_subnet_cidr, -2) #last ip is reserved by azure
+    subnet_id                     = local.master_subnet_id
+    private_ip_address_allocation = "Dynamic"
   }
 }
 
@@ -66,9 +65,10 @@ resource "azurerm_lb_probe" "internal_lb_probe_api_internal" {
   name                = "api-internal-probe"
   resource_group_name = var.resource_group_name
   interval_in_seconds = 10
-  number_of_probes    = 3
+  number_of_probes    = 2
   loadbalancer_id     = azurerm_lb.internal.id
   port                = 6443
-  protocol            = "TCP"
+  protocol            = "HTTPS"
+  request_path        = "/readyz"
 }
 

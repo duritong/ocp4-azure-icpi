@@ -4,38 +4,48 @@ locals {
   ip_configuration_name = "pipConfig"
 }
 
+variable "nic_depends_on" {
+  type    = any
+  default = null
+}
 resource "azurerm_network_interface" "master" {
-  count               = var.instance_count
-  name                = "${var.cluster_id}-master${count.index}-nic"
-  location            = var.region
-  resource_group_name = var.resource_group_name
+  count = var.instance_count
+
+  name                          = "${var.cluster_id}-master${count.index}-nic"
+  location                      = var.region
+  resource_group_name           = var.resource_group_name
+  enable_accelerated_networking = true
 
   ip_configuration {
     subnet_id                     = var.subnet_id
     name                          = local.ip_configuration_name
     private_ip_address_allocation = "Dynamic"
   }
+  depends_on = [var.nic_depends_on]
 }
 
-resource "azurerm_network_interface_backend_address_pool_association" "master" {
-  count                   = var.instance_count
-  network_interface_id    = element(azurerm_network_interface.master.*.id, count.index)
-  backend_address_pool_id = var.elb_backend_pool_id
-  ip_configuration_name   = local.ip_configuration_name #must be the same as nic's ip configuration name.
-}
+#resource "azurerm_network_interface_backend_address_pool_association" "master" {
+#  count = var.instance_count
+#
+#  network_interface_id    = element(azurerm_network_interface.master.*.id, count.index)
+#  backend_address_pool_id = var.elb_backend_pool_id
+#  ip_configuration_name   = local.ip_configuration_name #must be the same as nic's ip configuration name.
+#}
 
 resource "azurerm_network_interface_backend_address_pool_association" "master_internal" {
-  count                   = var.instance_count
+  count = var.instance_count
+
   network_interface_id    = element(azurerm_network_interface.master.*.id, count.index)
   backend_address_pool_id = var.ilb_backend_pool_id
   ip_configuration_name   = local.ip_configuration_name #must be the same as nic's ip configuration name.
 }
 
 resource "azurerm_virtual_machine" "master" {
-  count                 = var.instance_count
+  count = var.instance_count
+
   name                  = "${var.cluster_id}-master-${count.index}"
   location              = var.region
-  zones                 = compact([var.availability_zones[count.index]])
+#  zones                 = compact([var.availability_zones[count.index]])
   resource_group_name   = var.resource_group_name
   network_interface_ids = [element(azurerm_network_interface.master.*.id, count.index)]
   vm_size               = var.vm_size
@@ -51,7 +61,7 @@ resource "azurerm_virtual_machine" "master" {
     name              = "${var.cluster_id}-master-${count.index}_OSDisk" # os disk name needs to match cluster-api convention
     caching           = "ReadOnly"
     create_option     = "FromImage"
-    managed_disk_type = "Premium_LRS"
+    managed_disk_type = var.os_volume_type
     disk_size_gb      = var.os_volume_size
   }
 
