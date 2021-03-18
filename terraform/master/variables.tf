@@ -30,14 +30,6 @@ variable "instance_count" {
   type = string
 }
 
-variable "elb_backend_pool_v4_id" {
-  type = string
-}
-
-variable "elb_backend_pool_v6_id" {
-  type = string
-}
-
 variable "ilb_backend_pool_v4_id" {
   type = string
 }
@@ -122,4 +114,8 @@ When false, Standard LB will be used for egress to the Internet.
 This is required because terraform cannot calculate counts during plan phase completely and therefore the `vnet/public-lb.tf`
 conditional need to be recreated. See https://github.com/hashicorp/terraform/issues/12570
 EOF
+}
+variable "azure_master_ips" {
+  type = list(string)
+  description = "Fixed IPs for the master vms"
 }

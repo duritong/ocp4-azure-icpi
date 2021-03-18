@@ -28,8 +28,8 @@ resource "azurerm_lb" "internal" {
       private_ip_address_version = frontend_ip_configuration.value.ipv6 ? "IPv6" : "IPv4"
       # WORKAROUND: Allocate a high ipv6 internal LB address to avoid the race with NIC allocation (a master and the LB
       #   were being assigned the same IP dynamically). Issue is being tracked as a support ticket to Azure.
-      private_ip_address_allocation = frontend_ip_configuration.value.ipv6 ? "Static" : "Dynamic"
-      private_ip_address            = frontend_ip_configuration.value.ipv6 ? cidrhost(local.master_subnet_cidr_v6, -2) : null
+      private_ip_address_allocation = "Static"
+      private_ip_address            = var.azure_api_ip
     }
   }
 }

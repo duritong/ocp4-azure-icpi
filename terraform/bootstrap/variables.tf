@@ -38,16 +38,6 @@ variable "subnet_id" {
   description = "The subnet ID for the bootstrap node."
 }
 
-variable "elb_backend_pool_v4_id" {
-  type        = string
-  description = "The external load balancer bakend pool id. used to attach the bootstrap NIC"
-}
-
-variable "elb_backend_pool_v6_id" {
-  type        = string
-  description = "The external load balancer bakend pool id for ipv6. used to attach the bootstrap NIC"
-}
-
 variable "ilb_backend_pool_v4_id" {
   type        = string
   description = "The internal load balancer bakend pool id. used to attach the bootstrap NIC"
@@ -105,4 +95,8 @@ When false, Standard LB will be used for egress to the Internet.
 This is required because terraform cannot calculate counts during plan phase completely and therefore the `vnet/public-lb.tf`
 conditional need to be recreated. See https://github.com/hashicorp/terraform/issues/12570
 EOF
+}
+variable "azure_bootstrap_ip" {
+  type = string
+  description = "Fixed IP for the bootstrap vm"
 }

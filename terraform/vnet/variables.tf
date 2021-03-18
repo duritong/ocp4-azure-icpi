@@ -86,3 +86,7 @@ This determined whether User defined routing will be used for egress to Internet
 When false, Standard LB will be used for egress to the Internet.
 EOF
 }
+variable "azure_api_ip" {
+  type = string
+  description = "Fixed IP for the API lb"
+}
