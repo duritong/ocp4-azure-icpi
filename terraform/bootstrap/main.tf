@@ -115,7 +115,7 @@ resource "azurerm_network_interface_backend_address_pool_association" "internal_
 }
 
 resource "azurerm_linux_virtual_machine" "bootstrap" {
-  name                  = "${var.cluster_id}-bootstrap"
+  name                  = "bootstrap"
   location              = var.region
   resource_group_name   = var.resource_group_name
   network_interface_ids = [azurerm_network_interface.bootstrap.id]

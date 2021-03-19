@@ -36,7 +36,7 @@ networking:
 platform:
   azure:
     region: centralus
-    baseDomainResourceGroupName: resource_group
+    baseDomainResourceGroupName: none
     networkResourceGroupName: vnet_resource_group
     resourceGroupName: resource_group
     virtualNetwork: vnet
