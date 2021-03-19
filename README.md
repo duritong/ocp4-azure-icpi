@@ -54,6 +54,8 @@ base_domain = "$(jq -r .ignition.config.append[0].source master.ign  | sed 's@.*
 cluster_domain = "$(jq -r .ignition.config.append[0].source $(pwd)/master.ign  | sed 's@.*/api-int.\(.*\):22623/.*@\1@')"
 machine_cidr = "$(jq -r '.["*installconfig.InstallConfig"]["config"]["networking"]["machineCIDR"]' .openshift_install_state.json)"
 master_count = 3
+azure_private=true
+azure_preexisting_network=true
 
 ignition_bootstrap_file = "$(pwd)/install/bootstrap.ign"
 ignition_master_file = "$(pwd)/install/master.ign"
