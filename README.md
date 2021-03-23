@@ -94,7 +94,7 @@ terraform apply ../install/plan.out
 terraform destroy -target=module.bootstrap -auto-approve -var-file=../terraform.tfvars
 
 # wait for apps LB to popup and move it to the right ip
-oc patch service router-default --patch '{"spec": {"loadBalancerIP": "3.4.2.1"}}'
+oc patch -n openshift-ingress service router-default --patch '{"spec": {"loadBalancerIP": "3.4.2.1"}}'
 
 ./openshift-install wait-for install-complete --dir=../install
 ```
