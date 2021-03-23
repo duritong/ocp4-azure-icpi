@@ -96,7 +96,3 @@ This is required because terraform cannot calculate counts during plan phase com
 conditional need to be recreated. See https://github.com/hashicorp/terraform/issues/12570
 EOF
 }
-variable "azure_bootstrap_ip" {
-  type = string
-  description = "Fixed IP for the bootstrap vm"
-}

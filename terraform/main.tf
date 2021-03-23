@@ -38,8 +38,6 @@ module "bootstrap" {
   use_ipv4                  = var.use_ipv4 || var.azure_emulate_single_stack_ipv6
   use_ipv6                  = var.use_ipv6
   emulate_single_stack_ipv6 = var.azure_emulate_single_stack_ipv6
-
-  azure_bootstrap_ip = var.azure_bootstrap_ip
 }
 
 module "vnet" {
@@ -89,8 +87,6 @@ module "master" {
   use_ipv4                  = var.use_ipv4 || var.azure_emulate_single_stack_ipv6
   use_ipv6                  = var.use_ipv6
   emulate_single_stack_ipv6 = var.azure_emulate_single_stack_ipv6
-
-  azure_master_ips = var.azure_master_ips
 }
 
 resource "random_string" "storage_suffix" {

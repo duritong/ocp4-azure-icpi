@@ -115,7 +115,3 @@ This is required because terraform cannot calculate counts during plan phase com
 conditional need to be recreated. See https://github.com/hashicorp/terraform/issues/12570
 EOF
 }
-variable "azure_master_ips" {
-  type = list(string)
-  description = "Fixed IPs for the master vms"
-}

@@ -78,9 +78,9 @@ EOF
 
 cd terraform
 # download custom provider
-mkdir .terraform/plugins/linux_amd64
+mkdir -p .terraform/plugins/linux_amd64
 cd .terraform/plugins/linux_amd64
-curl https://github.com/community-terraform-providers/terraform-provider-ignition/releases/download/v2.1.2/terraform-provider-ignition_2.1.2_linux_amd64.zip -o terraform-provider-ignition.zip
+curl -L https://github.com/community-terraform-providers/terraform-provider-ignition/releases/download/v2.1.2/terraform-provider-ignition_2.1.2_linux_amd64.zip -o terraform-provider-ignition.zip
 unzip terraform-provider-ignition.zip
 rm terraform-provider-ignition.zip
 
