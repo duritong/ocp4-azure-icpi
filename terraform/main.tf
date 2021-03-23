@@ -14,6 +14,7 @@ provider "azurerm" {
   client_secret   = var.azure_client_secret
   tenant_id       = var.azure_tenant_id
   environment     = var.azure_environment
+  version         = "~> 2.52"
 }
 
 module "bootstrap" {

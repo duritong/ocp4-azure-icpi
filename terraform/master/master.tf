@@ -42,7 +42,6 @@ resource "azurerm_network_interface" "master" {
       subnet_id                     = var.subnet_id
       private_ip_address_version    = ip_configuration.value.ip_address_version
       private_ip_address_allocation = "Dynamic"
-//      private_ip_address            = var.azure_master_ips[count.index]
     }
   }
 }

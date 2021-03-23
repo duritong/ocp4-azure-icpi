@@ -129,11 +129,3 @@ variable "azure_api_ip" {
   type = string
   description = "Fixed IP for the API lb"
 }
-variable "azure_bootstrap_ip" {
-  type = string
-  description = "Fixed IP for the bootstrap vm"
-}
-variable "azure_master_ips" {
-  type = list(string)
-  description = "Fixed IPs for the master vms"
-}
